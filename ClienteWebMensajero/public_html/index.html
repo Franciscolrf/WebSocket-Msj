@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Mensajero WebSocket</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                margin: 20px;
+            }
+
+            #usuarios {
+                border: 1px solid #ccc;
+                padding: 10px;
+                width: 200px;
+                float: right;
+            }
+
+            #mensajes {
+                border: 1px solid #ccc;
+                padding: 10px;
+                height: 300px;
+                overflow-y: scroll;
+                margin-bottom: 10px;
+            }
+
+            #entrada {
+                display: flex;
+                gap: 10px;
+            }
+
+            #entrada input {
+                flex: 1;
+            }
+        </style>
+    </head>
+    <body>
+
+        <h2>Mensajero WebSocket</h2>
+
+        <div>
+            <label for="alias">Tu alias:</label>
+            <input type="text" id="txtAlias" />
+            <button onclick="conectar()">Conectar</button>
+        </div>
+
+        <div id="usuarios">
+            <h4>Usuarios conectados</h4>
+            <ul id="listaUsuarios"></ul>
+        </div>
+
+        <div id="mensajes"></div>
+
+        <div id="entrada">
+            <input type="text" id="mensaje" placeholder="Escribe un mensaje">
+            <button onclick="enviarMensaje()">Enviar</button>
+        </div>
+
+        <script src="main.js"></script>
+
+    </body>
+</html>
