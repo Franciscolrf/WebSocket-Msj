@@ -13,8 +13,8 @@ public class VentanaChat extends JFrame {
     private JTextArea areaMensajes;
     private JTextField campoMensaje;
     private JButton btnEnviar;
-    private DefaultListModel<String> modeloUsuarios;
-    private JList<String> listaUsuarios;
+    private DefaultListModel<UsuarioSwing> modeloUsuarios;
+    private JList<UsuarioSwing> listaUsuarios;
 
     private WSEndpointSwing wsEndpoint;
 
@@ -49,10 +49,30 @@ public class VentanaChat extends JFrame {
 
         modeloUsuarios = new DefaultListModel<>();
         listaUsuarios = new JList<>(modeloUsuarios);
+        listaUsuarios.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
+                Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof UsuarioSwing usuario) {
+                    if (usuario.esPropio) {
+                        c.setForeground(Color.GRAY);
+                        c.setFont(c.getFont().deriveFont(Font.ITALIC));
+                        list.removeSelectionInterval(index, index);
+                    } else {
+                        c.setForeground(Color.BLACK);
+                        c.setFont(c.getFont().deriveFont(Font.PLAIN));
+                    }
+                }
+                return c;
+            }
+        });
+
         JScrollPane scrollUsuarios = new JScrollPane(listaUsuarios);
         scrollUsuarios.setPreferredSize(new Dimension(150, 0));
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollMensajes, scrollUsuarios);
+        splitPane.setResizeWeight(0.8);
         add(splitPane, BorderLayout.CENTER);
 
         JPanel panelInferior = new JPanel();
@@ -93,8 +113,8 @@ public class VentanaChat extends JFrame {
                 return;
             }
 
-            String seleccionado = listaUsuarios.getSelectedValue();
-            if (seleccionado != null && !seleccionado.equalsIgnoreCase(aliasPropio)) {
+            UsuarioSwing seleccionado = listaUsuarios.getSelectedValue();
+            if (seleccionado != null && !seleccionado.alias.equalsIgnoreCase(aliasPropio)) {
                 mensaje = "@" + seleccionado + ": " + mensaje;
             }
 
@@ -111,14 +131,29 @@ public class VentanaChat extends JFrame {
     }
 
     public void actualizarUsuarios(java.util.List<String> usuarios) {
-    SwingUtilities.invokeLater(() -> {
-        modeloUsuarios.clear();
-        for (String u : usuarios) {
-            if (!u.equalsIgnoreCase(aliasPropio)) {
-                modeloUsuarios.addElement(u);
+        SwingUtilities.invokeLater(() -> {
+            modeloUsuarios.clear();
+            for (String u : usuarios) {
+                boolean esPropio = u.equalsIgnoreCase(aliasPropio);
+                modeloUsuarios.addElement(new UsuarioSwing(u, esPropio));
             }
+        });
+    }
+
+    private static class UsuarioSwing {
+
+        String alias;
+        boolean esPropio;
+
+        UsuarioSwing(String alias, boolean esPropio) {
+            this.alias = alias;
+            this.esPropio = esPropio;
         }
-    });
-}
+
+        @Override
+        public String toString() {
+            return alias;
+        }
+    }
 
 }
