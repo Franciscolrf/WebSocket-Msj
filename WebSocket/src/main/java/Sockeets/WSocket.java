@@ -23,21 +23,48 @@ public class WSocket {
         enviarListaUsuarios();
     }
 
-    @OnMessage
-    public void onMessage(String message, Session session) {
-        Usuario emisor = buscarUsuarioPorSesion(session);
-        if (emisor == null) {
-            return;
-        }
+   @OnMessage
+public void onMessage(String message, Session session) {
+    Usuario emisor = buscarUsuarioPorSesion(session);
+    if (emisor == null) return;
 
-        for (Usuario usuario : usuarios) {
+
+    if (message.startsWith("@")) {
+        int separador = message.indexOf(":");
+        if (separador > 1) {
+            String destinatario = message.substring(1, separador).trim();
+            String contenido = message.substring(separador + 1).trim();
+
+            for (Usuario usuario : usuarios) {
+                if (usuario.getAlias().equalsIgnoreCase(destinatario)) {
+                    try {
+                        usuario.getSession().getBasicRemote().sendText("(Privado de " + emisor.getAlias() + "): " + contenido);
+                        emisor.getSession().getBasicRemote().sendText("(Privado para " + destinatario + "): " + contenido);
+                    } catch (IOException e) {
+                        Logger.getLogger(WSocket.class.getName()).log(Level.SEVERE, null, e);
+                    }
+                    return;
+                }
+            }
+
             try {
-                usuario.getSession().getBasicRemote().sendText(emisor.getAlias() + ": " + message);
+                emisor.getSession().getBasicRemote().sendText(" Usuario '" + destinatario + "' no encontrado.");
             } catch (IOException e) {
                 Logger.getLogger(WSocket.class.getName()).log(Level.SEVERE, null, e);
             }
+            return;
         }
     }
+
+    for (Usuario usuario : usuarios) {
+        try {
+            usuario.getSession().getBasicRemote().sendText(emisor.getAlias() + ": " + message);
+        } catch (IOException e) {
+            Logger.getLogger(WSocket.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+}
+
 
     @OnClose
     public void onClose(Session session) {
