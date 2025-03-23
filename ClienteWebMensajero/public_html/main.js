@@ -1,7 +1,11 @@
 let socket = null;
+let usuarioSeleccionado = null;
+let seleccionadoElemento = null;
+let aliasPropio = null;
 
 function conectar() {
   const alias = document.getElementById("txtAlias").value.trim();
+  aliasPropio = alias;
   if (alias === "") {
     alert("Debes ingresar un alias.");
     return;
@@ -44,14 +48,21 @@ function conectar() {
 
 
 function enviarMensaje() {
-    const input = document.getElementById("mensaje");
-    const mensaje = input.value.trim();
-    if (mensaje === "" || socket == null || socket.readyState !== WebSocket.OPEN) {
-        return;
-    }
-    socket.send(mensaje);
-    input.value = "";
+  const input = document.getElementById("mensaje");
+  let mensaje = input.value.trim();
+
+  if (mensaje === "" || socket == null || socket.readyState !== WebSocket.OPEN) {
+    return;
+  }
+
+  if (usuarioSeleccionado) {
+    mensaje = `@${usuarioSeleccionado}: ${mensaje}`;
+  }
+
+  socket.send(mensaje);
+  input.value = "";
 }
+
 
 function agregarMensaje(mensaje) {
     const contenedor = document.getElementById("mensajes");
@@ -62,11 +73,38 @@ function agregarMensaje(mensaje) {
 }
 
 function actualizarListaUsuarios(usuarios) {
-    const ul = document.getElementById("listaUsuarios");
-    ul.innerHTML = ""; // Limpiar lista
-    usuarios.forEach(usuario => {
-        const li = document.createElement("li");
-        li.textContent = usuario;
-        ul.appendChild(li);
-    });
+  const ul = document.getElementById("listaUsuarios");
+  ul.innerHTML = "";
+
+  usuarios.forEach(alias => {
+    const li = document.createElement("li");
+    li.textContent = alias;
+
+    if (alias !== aliasPropio) {
+      li.onclick = () => seleccionarUsuario(alias, li);
+      li.style.cursor = "pointer";
+    } else {
+      li.style.color = "gray";
+      li.style.fontStyle = "italic";
+    }
+
+    ul.appendChild(li);
+  });
 }
+
+
+
+function seleccionarUsuario(alias, elemento) {
+  usuarioSeleccionado = alias;
+
+  if (seleccionadoElemento) {
+    seleccionadoElemento.style.fontWeight = "normal";
+    seleccionadoElemento.style.color = "black";
+  }
+
+  elemento.style.fontWeight = "bold";
+  elemento.style.color = "green";
+  seleccionadoElemento = elemento;
+}
+
+
