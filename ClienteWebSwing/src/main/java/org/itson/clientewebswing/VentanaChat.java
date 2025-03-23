@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 
 public class VentanaChat extends JFrame {
 
+    private String aliasPropio;
     private JTextField campoAlias;
     private JButton btnConectar;
     private JTextArea areaMensajes;
@@ -80,17 +81,27 @@ public class VentanaChat extends JFrame {
                 return;
             }
 
-            wsEndpoint = new WSEndpointSwing(alias, this);
+            aliasPropio = campoAlias.getText().trim();
+            wsEndpoint = new WSEndpointSwing(aliasPropio, this);
+
             btnConectar.setEnabled(false);
         });
 
         btnEnviar.addActionListener(e -> {
             String mensaje = campoMensaje.getText().trim();
-            if (!mensaje.isEmpty() && wsEndpoint != null) {
-                wsEndpoint.enviarMensaje(mensaje);
-                campoMensaje.setText("");
+            if (mensaje.isEmpty() || wsEndpoint == null) {
+                return;
             }
+
+            String seleccionado = listaUsuarios.getSelectedValue();
+            if (seleccionado != null && !seleccionado.equalsIgnoreCase(aliasPropio)) {
+                mensaje = "@" + seleccionado + ": " + mensaje;
+            }
+
+            wsEndpoint.enviarMensaje(mensaje);
+            campoMensaje.setText("");
         });
+
     }
 
     public void agregarMensaje(String mensaje) {
@@ -100,11 +111,14 @@ public class VentanaChat extends JFrame {
     }
 
     public void actualizarUsuarios(java.util.List<String> usuarios) {
-        SwingUtilities.invokeLater(() -> {
-            modeloUsuarios.clear();
-            for (String u : usuarios) {
+    SwingUtilities.invokeLater(() -> {
+        modeloUsuarios.clear();
+        for (String u : usuarios) {
+            if (!u.equalsIgnoreCase(aliasPropio)) {
                 modeloUsuarios.addElement(u);
             }
-        });
-    }
+        }
+    });
+}
+
 }
